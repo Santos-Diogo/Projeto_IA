@@ -1,28 +1,34 @@
-def format_path(path):          #Pega numa lista de nodes, em formato tuplo e separa por -
-    return ' -> '.join(node[0] for node in path)
+import networkx as nx
+import matplotlib.pyplot as plt
+from queue import Queue
+from collections import OrderedDict
+def iterative_deepening_dfs(graph, start, target):
+    visited = set()  # Conjunto para rastrear nós visitados
+    path = []  # Caminho para a solução
+    order_of_expansion = []  # Ordem de expansão
 
-def iterative_deepening_search(start, goal, neighbors_func, max_depth=50):
-    def depth_limited_search(node, depth, expanded_nodes):
-        expanded_nodes.append(node)
-        if node == goal:
-            return [node]
-        if depth == 0:
-            return None
-        for child in neighbors_func(node):
-            path = depth_limited_search(child, depth - 1, expanded_nodes)
-            if path is not None:
-                return [node] + path
-        return None
+    def dfs(node, depth):
+        if node in visited:
+            return False
+        visited.add(node)
+        order_of_expansion.append(node)
+        if node == target:
+            path.append(node)
+            return True
+        if depth > 0:
+            for child in graph.get(node, []):
+                if dfs(child, depth - 1):
+                    path.append(node)
+                    return True
+        return False
 
-    for depth in range(max_depth):
-        expanded_nodes = []
-        result = depth_limited_search(start, depth, expanded_nodes)
-        if result is not None:
-            return result, expanded_nodes, depth
+    depth = 0
+    while not dfs(start, depth):
+        visited.clear()  # Limpar nós visitados para a próxima iteração
+        depth += 1
 
-    return None, [], None
-
-# Example graph with tuple nodes
+    unique_list = list(OrderedDict.fromkeys(order_of_expansion))
+    return path[::-1], unique_list, depth
 graph = {
     ('A',): [('B',), ('C',)],
     ('B',): [('D',), ('E',)],
@@ -41,20 +47,5 @@ graph = {
     ('O',): []
 }
 
-# Neighbors function for tuple-based graph
-def neighbors(node):
-    return graph[node]
-
-# Run the algorithm
-start = ('A',)
-goal = ('M',)
-solution, expanded_nodes, depth = iterative_deepening_search(start, goal, neighbors)
-
-# Format the solution and expanded nodes
-formatted_solution = format_path(solution)
-formatted_expanded_nodes = format_path(expanded_nodes)
-
-# Create the final tuple output
-final_output = (formatted_solution, formatted_expanded_nodes, depth)
-print(final_output)
-
+solution, order_of_expansion, depth = iterative_deepening_dfs(graph, ('A',), ('M',))
+print(solution, order_of_expansion, depth)
