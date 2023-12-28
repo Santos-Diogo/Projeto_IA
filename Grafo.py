@@ -25,30 +25,30 @@ class Grafo:
             self.nx.add_node(node_name, pos=node_pos)
             for connection, cost in connections:
                 self.nx.add_edge(node_name, connection, weight=cost)
+            
                 
-    def neighbors_func(self, node):
-        return self.g[node]
-                
-    def iterative_deepening_search(self, start, goal, max_depth=50):
-        def depth_limited_search(node, depth, expanded_nodes):
-            expanded_nodes.append(node)
-            if node == goal:
-                return [node]
-            if depth == 0:
-                return None
-            for child in self.neighbors_func(node):
-                path = depth_limited_search(child, depth - 1, expanded_nodes)
-                if path is not None:
-                    return [node] + path
-            return None
+    def iterative_deepening_dfs(self, start, target):
+        path = []  # Caminho para a solução
+        order_of_expansion = []  # Ordem de expansão
+        pdb.set_trace()
+        def dfs(node, depth):
+            order_of_expansion.append(node)
+            if node == target:
+                path.append(node)
+                return True
+            if depth > 0:
+                for child in self.g.get(node, []):
+                    if dfs((child[0], ), depth - 1):
+                        path.append(node)
+                        return True
+            return False
 
-        for depth in range(max_depth):
-            expanded_nodes = []
-            result = depth_limited_search(start, depth, expanded_nodes)
-            if result is not None:
-                return result, expanded_nodes, depth
+        depth = 0
+        while not dfs(start, depth):
+            depth += 1
 
-        return None, [], None
+        unique_list = list(OrderedDict.fromkeys(order_of_expansion))
+        return path[::-1], unique_list, depth
     
     def procura_DFS(self, ponto_inicial, ponto_objetivo):
         visitados = set() #armazenar nós visitados
@@ -207,9 +207,9 @@ if __name__ == "__main__":
 
 
 graph = Grafo(graph_dict)
-""" solution, expanded_nodes, depth = graph.iterative_deepening_search('Vila Nova de F', 'Seide')
-print(format_path(solution) + "\n" + format_path(expanded_nodes)) """
+#print(format_path(solution) + "\n" + format_path(expanded_nodes))
 print("DFS: ", graph.procura_DFS(('Vila Nova de F', ), ('Seide', )))
 print("BFS: ", graph.procura_BFS(('Vila Nova de F', ), ('Seide', )))
 print("UCS: ", graph.custoUniforme(('Vila Nova de F', ), ('Seide', )))
+print("IDDFS: ", graph.iterative_deepening_dfs(('Vila Nova de F', ), ('Seide', )))
 visualize_graph(graph.nx)
