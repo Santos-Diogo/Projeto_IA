@@ -24,7 +24,7 @@ def ler_estafetas_csv(caminho_do_csv):
             estafetas.append(estafeta)
     return estafetas
 
-caminho_do_csv = 'Dataset\Estafetas.csv'
+caminho_do_csv = 'Dataset/Estafetas.csv'
 
 estafetas = ler_estafetas_csv(caminho_do_csv)
 for estafeta in estafetas:
