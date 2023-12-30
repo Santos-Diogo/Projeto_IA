@@ -1,3 +1,5 @@
+import csv
+
 class Entrega:
     def __init__(self, identificador, destino, peso, volume, tempo):
         self.identificador = identificador
@@ -10,7 +12,6 @@ class Entrega:
         return f"Identificador: {self.identificador}, Destino: {self.destino}, Peso: {self.peso}, Volume: {self.volume}, Tempo: {self.tempo}"
     
 
-import csv
 
 entregas = []
 with open('Entregas.csv', 'r') as arquivo_csv:
