@@ -1,5 +1,5 @@
 def procura_DFS(grafo, ponto_inicial, ponto_objetivo):
-    visitados = set() #armazenar nós visitados
+    visitados = set() #armazena nós visitados
     ordem_expansao = [] #Lista para armazenar a ordem de expansão dos nós
     
     #função auxiliar para converter tuplos em listas
@@ -41,27 +41,3 @@ def procura_DFS(grafo, ponto_inicial, ponto_objetivo):
     ordem_expansao = converter_tuplos_para_lista(ordem_expansao)
 
     return caminho, ordem_expansao, custo
-
-
-# Exemplo para testar:
-grafo_exemplo = {
-    'A': [('B', 1), ('C', 2)],
-    'B': [('D', 3), ('E', 4)],
-    'C': [('F', 2)],
-    'D': [('G', 1), ('H', 2)],
-    'E': [('H', 3), ('I', 4)],
-    'F': [('J', 2)],
-    'G': [('K', 1), ('L', 2)],
-    'H': [('M', 3)],
-    'I': [],
-    'J': [('N', 2), ('O', 3)],
-    'K': [],
-    'L': [],
-    'M': [],
-    'N': [],
-    'O': []
-}
-
-resultado = procura_DFS(grafo_exemplo, 'A', 'H')
-
-print(resultado)
