@@ -14,8 +14,8 @@ class Entrega:
 
 
 entregas = []
-with open('Entregas.csv', 'r') as arquivo_csv:
-    leitor_csv = csv.reader(arquivo_csv)
+with open('Entregas.csv', 'r', encoding = 'utf-8') as arquivo_csv:
+    leitor_csv = csv.reader(arquivo_csv, delimiter=';')
     next(leitor_csv)
     for linha in leitor_csv:
         identificador, destino, peso, volume, tempo = linha
