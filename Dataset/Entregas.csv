@@ -1,11 +1,11 @@
-﻿Identificador,Destino ,Peso (Kg),Volume (cm^3),Tempo (Min)
-1,Antas,1,3158,10
-2,Mouquim,3,63662,5
-3,Requião,6,155704,45
-4,Seide,20,197576,40
-5,Brufe,48,926217,35
-6,Mouquim,97,1026978,25
-7,Louro,10,1031470,30
-8,Vale,15,1231355,120
-9,Louro,2,1377894,10
-10,Outiz,100,1409832,60
+﻿Identificador;Destino ;Peso (Kg);Volume (cm^3);Tempo (Min)
+1;Antas;1;3158;10
+2;Mouquim;3;63662;5
+3;Requião;6;155704;45
+4;Seide;20;197576;40
+5;Brufe;48;926217;35
+6;Mouquim;97;1026978;25
+7;Louro;10;1031470;30
+8;Vale;15;1231355;120
+9;Louro;2;1377894;10
+10;Outiz;100;1409832;60
