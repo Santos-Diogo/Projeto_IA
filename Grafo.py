@@ -10,27 +10,38 @@ def format_path(path):          #Pega numa lista de nodes, em formato tuplo e se
     return ' -> '.join(node for node in path)
 
 class Grafo:
-    def __init__(self, graph_dict):
+    def __init__(self, graph_dict, graph_nx):
         self.nx = nx.Graph()
         self.g = graph_dict
         
-        for node, connections in graph_dict.items():
-            if len(node) == 1:  # Caso a posição não seja fornecida, definimos como (0, 0)
-                node_name, node_pos = node[0], (0, 0)
-            elif len(node) == 2:
-                node_name, node_pos = node
-            else:
-                raise ValueError("Cada entrada do dicionário deve ter 1 ou 2 elementos.")
-
+        for node, data in graph_nx.items():
+            node_name = node
+            node_pos = data.get('pos', (0, 0))  # Default position is (0, 0) if not specified
             self.nx.add_node(node_name, pos=node_pos)
-            for connection, cost in connections:
+
+            for connection, cost in data.get('connections', []):
                 self.nx.add_edge(node_name, connection, weight=cost)
-            
+    
+    
+    def heuristicFunction(self, initial_node, goal_node):
+        if initial_node in self.nx.nodes:
+            initial_pos = self.nx.nodes[initial_node]['pos']
+        else:
+            raise KeyError (f"{initial_node} does not exist in the graph")
+        if goal_node in self.nx.nodes:
+            goal_pos = self.nx.nodes[goal_node]['pos']
+        else:
+            raise KeyError (f"{goal_node} does not exist in the graph")
+        
+        #Usa-se a distância entre dois pontos num plano como heuristica com uma escala
+        heuristic = (((goal_pos[0] - initial_pos[0]) **2 + (goal_pos[1] - initial_pos[1]) **2) **0.5) * 10
+        return math.floor(heuristic)
+    
+
                 
     def iterative_deepening_dfs(self, start, target):
         path = []  # Caminho para a solução
         order_of_expansion = []  # Ordem de expansão
-        pdb.set_trace()
         def dfs(node, depth):
             order_of_expansion.append(node)
             if node == target:
@@ -178,6 +189,7 @@ class Grafo:
     #         return ((node_start_pos[0] - node_target_pos[0]) ** 2 + (node_start_pos[1] - node_target_pos[1]) ** 2) ** 0.5 * 100
     #     else:
     #         return 0
+    
 
 def visualize_graph(graph):
     pos = nx.get_node_attributes(graph, 'pos') if 'pos' in nx.get_node_attributes(graph, 'pos') else nx.spring_layout(graph, seed=455)
@@ -188,28 +200,59 @@ def visualize_graph(graph):
 
     plt.title("Grafo Visual com Heurística")
     plt.show()
+    
+def visualize_graph_with_heuristic(graph, goal_node):
+    pos = nx.get_node_attributes(graph.nx, 'pos')
+    edge_labels = {(node1, node2): f'{cost}' for (node1, node2, cost) in graph.nx.edges.data('weight')}
+    
+    # Calculate heuristic values and position them slightly below the nodes
+    heuristic_labels = {node: (pos[node][0], pos[node][1] - 0.2, f'H = {graph.heuristicFunction(node, goal_node)}') for node in graph.nx.nodes}
+
+    nx.draw(graph.nx, pos, with_labels=True, font_weight='bold', node_size=700, node_color='skyblue', font_size=8, font_color='black', edge_color='black', linewidths=1, alpha=0.7)
+    nx.draw_networkx_edge_labels(graph.nx, pos, edge_labels=edge_labels, font_color='red', font_size=8)
+    
+    # Draw heuristic values with custom formatting
+    for node, (x, y, label) in heuristic_labels.items():
+        plt.text(x, y, label, color='red', fontweight='bold', fontsize=8, ha='center', va='center')
+
+    plt.title("Graph with Heuristic Values")
+    plt.show()
 
 if __name__ == "__main__":
     graph_dict = {
-        ('Vila Nova de F',): [('Gavião', 5), ('Antas', 4), ('Calendário', 7), ('Mouquim', 3)],
-        ('Antas',): [('Calendário', 2), ('Requião', 6), ('Seide', 3)],
-        ('Calendário',): [('Brufe', 1)],
-        ('Gavião', ): [('Vale', 1), ('Mouquim', 4), ('Antas', 5)],
-        ('Requião', ): [('Vale', 5), ('Seide', 8)],
-        ('Brufe', ): [('Louro', 9), ('Outiz', 4)],
-        ('Outiz', ): [('Vilarinho', 8), ('Louro', 4)],
-        ('Mouquim', ): [],
-        ('Seide', ): [],
+        ('Vila Nova de Famalicão',): [('Gavião', 27), ('Antas', 22), ('Calendário', 27), ('Mouquim', 34), ('Louro', 40), ('Brufe', 30)],
+        ('Antas',): [('Calendário', 39), ('Esmeriz', 26), ('Vale', 52)],
+        ('Calendário',): [('Brufe', 16)],
+        ('Gavião', ): [('Vale', 35), ('Mouquim', 30), ('Antas', 50)],
+        ('Brufe', ): [('Louro', 34), ('Outiz', 25)],
+        ('Outiz', ): [('Vilarinho', 52), ('Louro', 27)],
+        ('Mouquim', ): [('Louro', 16)],
+        ('Esmeriz', ): [],
         ('Vale', ): [],
         ('Louro', ): [],
         ('Vilarinho', ): []
     }
+    
+    graph_pos_dict = {
+        'Vila Nova de Famalicão': {'pos': (0, 0), 'connections': [('Gavião', 27), ('Antas', 22), ('Calendário', 27), ('Mouquim', 34), ('Louro', 40), ('Brufe', 30)]},
+        'Antas': {'pos' : (0.9, -1.2), 'connections' : [('Calendário', 39), ('Esmeriz', 26), ('Vale', 52)]},
+        'Calendário': {'pos' : (-1, -1.466), 'connections' : [('Brufe', 16)]},
+        'Gavião': {'pos' : (1.052, 1.736), 'connections' : [('Vale', 35), ('Mouquim', 30), ('Antas', 50)]},
+        'Brufe': {'pos' : (-1.396, -0.1), 'connections' : [('Louro', 34), ('Outiz', 25)]},
+        'Outiz': {'pos' : (-2.92, 0.954), 'connections' : [('Vilarinho', 52), ('Louro', 27)]},
+        'Mouquim': {'pos' : (-0.447, 2.46), 'connections' : [('Louro', 16)]},
+        'Esmeriz': {'pos' : (0.469, -3.559), 'connections' : []},
+        'Vale': {'pos' : (3.322, 1.123), 'connections' : []},
+        'Louro': {'pos' : (-1.383, 2.4), 'connections' : []},
+        'Vilarinho': {'pos' : (-2.839, -2.616), 'connections' : []}
+    }
 
 
-graph = Grafo(graph_dict)
+graph = Grafo(graph_dict, graph_pos_dict)
 #print(format_path(solution) + "\n" + format_path(expanded_nodes))
-print("DFS: ", graph.procura_DFS(('Vila Nova de F', ), ('Seide', )))
-print("BFS: ", graph.procura_BFS(('Vila Nova de F', ), ('Seide', )))
-print("UCS: ", graph.custoUniforme(('Vila Nova de F', ), ('Seide', )))
-print("IDDFS: ", graph.iterative_deepening_dfs(('Vila Nova de F', ), ('Seide', )))
-visualize_graph(graph.nx)
+print("DFS: ", graph.procura_DFS(('Vila Nova de Famalicão', ), ('Esmeriz', )))
+print("BFS: ", graph.procura_BFS(('Vila Nova de Famalicão', ), ('Esmeriz', )))
+print("UCS: ", graph.custoUniforme(('Vila Nova de Famalicão', ), ('Esmeriz', )))
+print("IDDFS: ", graph.iterative_deepening_dfs(('Vila Nova de Famalicão', ), ('Esmeriz', )))
+
+visualize_graph_with_heuristic(graph, 'Esmeriz')
