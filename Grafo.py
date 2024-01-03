@@ -59,7 +59,7 @@ class Grafo:
             for item in self.trainedHeuristic[initial_node]:
                 if item[0] == goal_node:
                     return item[1]  
-        return None
+        raise KeyError ("ERROR")
     
     def heuristicPath(self, start, goals):
         heuristicSum = 0
@@ -160,7 +160,7 @@ class Grafo:
                 # Se chegamos ao objetivo, retornamos o caminho
                 objetivos.remove(estado_atual)
                 destinos.append(estado_atual)
-                next_path, next_custo, next_expansao, _ = self.busca_gulosa(estado_atual, objetivos, destinos)
+                next_path, next_custo, next_expansao, _ = self.busca_gulosa(estado_atual, objetivos, function, destinos)
                 return path + next_path[1:], custo + next_custo, expansao + [estado_atual] + next_expansao[1:], destinos
 
             if estado_atual not in explorados:
@@ -259,7 +259,7 @@ class Grafo:
                 if no_atual == fim:
                     fins.remove(no_atual)
                     destinos.append(no_atual)
-                    next_path, next_custo, next_expansao, _ = self.a_estrela(no_atual, fins, destinos)
+                    next_path, next_custo, next_expansao, _ = self.a_estrela(no_atual, fins, function, destinos)
                     return caminho + next_path[1:], round(custo, 2) + next_custo, expansao + next_expansao[1:], destinos
 
                 for vizinho, custo_aresta in self.g[no_atual]['connections']:
@@ -272,16 +272,22 @@ class Grafo:
 
 
     def trainHeuristic (self):
-        for node, data in self.g.items():
-            for conn, _ in data['connections']:
-                path, _, _, _ = self.a_estrela(node, [conn], self.heuristicFunction)
-                newheuristic = self.heuristicPath(node, path)
-                if node in self.trainedHeuristic:
-                    self.trainedHeuristic[node].append((conn, newheuristic))
-                else:
-                    self.trainedHeuristic[node] = [(conn, newheuristic)]
+        keys = list(self.g.keys())
+
+        for i in range(len(keys)):
+            current_key = keys[i]
             
-    def visualize_graph_with_heuristic(self, goal_nodes):
+            for j in range(len(keys)):
+                other_key = keys[j]
+                path, _, _, _ = self.a_estrela(current_key, [other_key], self.heuristicFunction)
+                newheuristic = self.heuristicPath(current_key, path)
+                if current_key in self.trainedHeuristic:
+                    self.trainedHeuristic[current_key].append((other_key, newheuristic))
+                else:
+                    self.trainedHeuristic[current_key] = [(other_key, newheuristic)]
+
+            
+    def visualize_graph_with_heuristic(self, goal_nodes, function):
         plt.clf()
         plt.ion()
         plt.title("Grafo com heurísticas em " + str (goal_nodes))
@@ -291,7 +297,7 @@ class Grafo:
         offset = 0.2
         # Calculate heuristic values and position them slightly below the nodes
         for goal_node in goal_nodes:
-            temp = [(pos[node][0], pos[node][1] - offset, f'H = {self.heuristicFunction(node, goal_node)}') for node in self.nx.nodes]
+            temp = [(pos[node][0], pos[node][1] - offset, f'H = {function(node, goal_node)}') for node in self.nx.nodes]
             heuristic_labels = heuristic_labels + temp
             offset = offset + 0.2
 
@@ -304,31 +310,9 @@ class Grafo:
 
         plt.show()
         plt.ioff()
+        
     
-    """ def visualize_solution(self, goal_node, path):
-        plt.clf()
-        plt.ion()
-        pos = nx.get_node_attributes(self.nx, 'pos')
-        edge_labels = {(node1, node2): f'{cost}' for (node1, node2, cost) in self.nx.edges.data('weight')}
-        
-        # Calculate heuristic values and position them slightly below the nodes
-        heuristic_labels = {node: (pos[node][0], pos[node][1] - 0.2, f'H = {self.heuristicFunction(node, goal_node)}') for node in self.nx.nodes}
-
-        nx.draw(self.nx, pos, with_labels=True, font_weight='bold', node_size=700, node_color='skyblue', font_size=8, font_color='black', edge_color='black', linewidths=1, alpha=0.7)
-        nx.draw_networkx_edge_labels(self.nx, pos, edge_labels=edge_labels, font_color='red', font_size=8)
-        
-        # Draw heuristic values with custom formatting
-        for node, (x, y, label) in heuristic_labels.items():
-            plt.text(x, y, label, color='red', fontweight='bold', fontsize=8, ha='center', va='center')
-            
-        a_star_edges = [(path[i], path[i + 1]) for i in range(len(path) - 1)]
-        nx.draw_networkx_edges(self.nx, pos, edgelist=a_star_edges, edge_color='green', width=2)
-        
-        plt.title("Graph with Heuristic Values")
-        plt.show()
-        plt.ioff() """
-    
-    def visualize_solution(self, path, goals, algorithm, heuristic=False):
+    def visualize_solution(self, path, goals, algorithm, function, heuristic=False):
         plt.clf()
         plt.ion()
         plt.title(algorithm + ": " + path[0] + " -> " + str(goals))
@@ -346,7 +330,7 @@ class Grafo:
             offset = 0.2
             # Calculate heuristic values and position them slightly below the nodes
             for goal_node in goals:
-                temp = [(pos[node][0], pos[node][1] - offset, f'H = {self.heuristicFunction(node, goal_node)}') for node in self.nx.nodes]
+                temp = [(pos[node][0], pos[node][1] - offset, f'H = {function(node, goal_node)}') for node in self.nx.nodes]
                 heuristic_labels = heuristic_labels + temp
                 offset = offset + 0.2
             for (x, y, label) in heuristic_labels:
@@ -373,13 +357,4 @@ if __name__ == '__main__':
     graph = Grafo()
     graph.trainHeuristic()
     print(graph.trainedHeuristic)
-
-""" graph = Grafo()
-#print(format_path(solution) + "\n" + format_path(expanded_nodes))
-print("DFS: ", graph.procura_DFS(('Vila Nova de Famalicão', ), ('Esmeriz', )))
-print("BFS: ", graph.procura_BFS(('Vila Nova de Famalicão', ), ('Esmeriz', )))
-print("UCS: ", graph.custoUniforme(('Vila Nova de Famalicão', ), ('Esmeriz', )))
-print("IDDFS: ", graph.iterative_deepening_dfs(('Vila Nova de Famalicão', ), ('Esmeriz', )))
-print(graph.caminhosParaDestino('Gavião', ['Louro']))
-graph.visualize_solution('Louro', ['Gavião', 'Mouquim', 'Louro']) """
 

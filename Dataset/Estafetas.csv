@@ -1,10 +1,6 @@
 ﻿Id;Ponto De Partida;Lista de Encomendas;
-1;Vila Nova de Famalicão;8,10;
-2;Louro;5;
-3;Brufe;7;
-4;Esmeriz;3;
-5;Outiz;9;
-6;Mouquim;4;
-7;Seide;1;
-8;Gavião;6;
-9;Brufe;2;
+1;Vila Nova de Famalicão;8,10,13,19,23,28;
+2;Louro;5,4,12,18,24,29;
+3;Brufe;7,1,14,16,22,27;
+4;Esmeriz;3,6,11,20,26,30;
+5;Outiz;9,2,15,17,21,25;

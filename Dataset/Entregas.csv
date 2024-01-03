@@ -1,4 +1,4 @@
-﻿Identificador;Destino ;Peso (Kg);Volume (cm^3);Tempo (Min)
+﻿Identificador;Destino;Peso (Kg);Volume (cm^3);Tempo (Min)
 1;Antas;1;3158;10
 2;Mouquim;3;63662;5
 3;Vilarinho;6;155704;45
@@ -9,3 +9,23 @@
 8;Vale;15;1231355;120
 9;Louro;2;1377894;10
 10;Outiz;100;1409832;60
+11;Brufe;70;800432;90
+12;Calendário;8;16893;50
+13;Esmeriz;6;234567;20
+14;Seide;12;156783;70
+15;Vila Nova de Famalicão;60;1204785;180
+16;Antas;9;345678;35
+17;Vilarinho;18;876543;90
+18;Outiz;60;789012;45
+19;Mouquim;15;345678;25
+20;Louro;2;12345;15
+21;Calendário;4;98765;10
+22;Gavião;18;234567;25
+23;Vila Nova de Famalicão;10;876543;35
+24;Outiz;22;654321;50
+25;Esmeriz;15;432109;40
+26;Vale;30;987654;35
+27;Louro;8;345678;20
+28;Antas;12;567890;25
+29;Seide;25;876543;35
+30;Vilarinho;6;123456;40

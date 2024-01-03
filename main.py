@@ -1,20 +1,18 @@
 from manager import Manager
-import pdb
 
 class Menu:
     def __init__(self):
         self.manager = Manager()
-
+        self.heuristicF = self.manager.graph.heuristicFunction
 
     def __adicionarHeuristica (self):
         choice = input("Escolha o nó para a heurística se basear: ")
         ch_list = [item.strip() for item in choice.split(',')]
-        present = True
         for element in ch_list:
             if element not in self.manager.graph.nx.nodes:
                 print("Um dos nós que escolheu não existe...")
                 return
-        self.manager.graph.visualize_graph_with_heuristic(ch_list)
+        self.manager.graph.visualize_graph_with_heuristic(ch_list, self.heuristicF)
 
 
     def __menuEstafeta (self, estafeta):
@@ -32,31 +30,31 @@ class Menu:
         if choice == '1':
             caminho, custo, expansao, destinos= self.manager.resolverBFS(estafeta.Id)
             print (f"Caminho: {caminho}; Custo: {custo}; Expansão: {expansao}")
-            self.manager.graph.visualize_solution(caminho, destinos, "BFS")
+            self.manager.graph.visualize_solution(caminho, destinos, "BFS", self.heuristicF)
         elif choice == '2':
             caminho, custo, expansao, destinos= self.manager.resolverDFS(estafeta.Id)
             print (f"Caminho: {caminho}; Custo: {custo}; Expansão: {expansao}")
-            self.manager.graph.visualize_solution(caminho, destinos, "DFS")
+            self.manager.graph.visualize_solution(caminho, destinos, "DFS", self.heuristicF)
         elif choice == '3':
             caminho, custo, expansao, destinos= self.manager.resolverIDDFS(estafeta.Id)
             print (f"Caminho: {caminho}; Custo: {custo}; Expansão: {expansao}")
-            self.manager.graph.visualize_solution(caminho, destinos, "IDDFS")
+            self.manager.graph.visualize_solution(caminho, destinos, "IDDFS", self.heuristicF)
         elif choice == '4':
             caminho, custo, expansao, destinos= self.manager.resolverCustoUniforme(estafeta.Id)
             print (f"Caminho: {caminho}; Custo: {custo}; Expansão: {expansao}")
-            self.manager.graph.visualize_solution(caminho, destinos, "Custo Uniforme")
+            self.manager.graph.visualize_solution(caminho, destinos, "Custo Uniforme", self.heuristicF)
         elif choice == '5':
             caminho, custo, expansao, destinos= self.manager.resolverGreedy(estafeta.Id)
             print (f"Caminho: {caminho}; Custo: {custo}; Expansão: {expansao}")
-            self.manager.graph.visualize_solution(caminho, destinos, "Greedy", True)
+            self.manager.graph.visualize_solution(caminho, destinos, "Greedy", self.heuristicF, True)
         elif choice == '6':
             caminho, custo, expansao, destinos= self.manager.resolverA_Star(estafeta.Id)
             print (f"Caminho: {caminho}; Custo: {custo}; Expansão: {expansao}")
-            self.manager.graph.visualize_solution(caminho, destinos, "A*", True)
+            self.manager.graph.visualize_solution(caminho, destinos, "A*", self.heuristicF, True)
         elif choice == '8':
             return
         else:
-            print("Invalid choice. Please enter a number between 1 and 4.")
+            print("Escholha entre 1 a 8.")
 
     def __escolherEstafeta(self):
         i = 0
@@ -83,6 +81,7 @@ class Menu:
                 self.manager.graph.visualize_graph()
             elif choice == '2':
                 self.manager.train()
+                self.heuristicF = self.manager.graph.trainedHeuristicFunction
                 print("Heurística treinada")
             elif choice == '3':
                 self.__adicionarHeuristica()
