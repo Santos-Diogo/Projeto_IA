@@ -1,4 +1,5 @@
 import csv
+from Entregas import *
 
 class Estafetas:
     def __init__(self, Id, Ponto_Partida, Lista_Encomendas):
@@ -7,9 +8,9 @@ class Estafetas:
         self.Lista_Encomendas =Lista_Encomendas
         
     def __str__(self):
-        return f"ID: {self.Id}, Ponto de Partida: {self.Ponto_Partida}, Lista de Encomendas Atribuidas: {self.Lista_Encomendas}"
+        return f"Estafeta: {self.Id}, Ponto de Partida: {self.Ponto_Partida}, Encomendas Atribuidas: {len(self.Lista_Encomendas)}"
     
-def ler_estafetas_csv(caminho_do_csv):
+def populateEstafetas(caminho_do_csv):
     estafetas = []
     with open(caminho_do_csv, 'r', encoding='utf-8') as arquivo_csv: #o encoding= 'utf-8' é para conseguir imprimir os caracteres com acento
         leitor_csv = csv.reader(arquivo_csv, delimiter=';')
@@ -23,9 +24,3 @@ def ler_estafetas_csv(caminho_do_csv):
             estafeta = Estafetas(Id, Ponto_Partida, Lista_Encomendas)
             estafetas.append(estafeta)
     return estafetas
-
-caminho_do_csv = 'Dataset/Estafetas.csv'
-
-estafetas = ler_estafetas_csv(caminho_do_csv)
-for estafeta in estafetas:
-    print(estafeta)

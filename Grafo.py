@@ -4,24 +4,65 @@ from queue import Queue
 import math
 import heapq
 import pdb
-from collections import OrderedDict
+from collections import OrderedDict, deque
 
-def format_path(path):          #Pega numa lista de nodes, em formato tuplo e separa por -
-    return ' -> '.join(node for node in path)
+
+default = {
+    ('Vila Nova de Famalicão',): [('Gavião', 27), ('Antas', 22), ('Calendário', 27), ('Mouquim', 34), ('Louro', 40), ('Brufe', 30)],
+    ('Antas',): [('Calendário', 39), ('Esmeriz', 26), ('Vale', 52)],
+    ('Calendário',): [('Brufe', 16)],
+    ('Gavião', ): [('Vale', 35), ('Mouquim', 30), ('Antas', 50)],
+    ('Brufe', ): [('Louro', 34), ('Outiz', 25)],
+    ('Outiz', ): [('Vilarinho', 52), ('Louro', 27)],
+    ('Mouquim', ): [('Louro', 16)],
+    ('Esmeriz', ): [],
+    ('Vale', ): [],
+    ('Louro', ): [],
+    ('Vilarinho', ): []
+}
+
+default_pos = {
+    'Vila Nova de Famalicão': {'pos': (0, 0), 'connections': [('Gavião', 27), ('Antas', 22), ('Calendário', 27), ('Mouquim', 34), ('Louro', 40), ('Brufe', 30)]},
+    'Antas': {'pos' : (0.9, -1.2), 'connections' : [('Calendário', 39), ('Esmeriz', 26), ('Vale', 52)]},
+    'Calendário': {'pos' : (-1, -1.466), 'connections' : [('Brufe', 16)]},
+    'Gavião': {'pos' : (1.052, 1.736), 'connections' : [('Vila Nova de Famalicão', 27), ('Vale', 35), ('Mouquim', 30), ('Antas', 50)]},
+    'Brufe': {'pos' : (-1.396, -0.1), 'connections' : [('Louro', 34), ('Outiz', 25)]},
+    'Outiz': {'pos' : (-2.92, 0.954), 'connections' : [('Vilarinho', 52), ('Louro', 27)]},
+    'Mouquim': {'pos' : (-0.447, 2.46), 'connections' : [('Louro', 16)]},
+    'Esmeriz': {'pos' : (0.469, -3.559), 'connections' : []},
+    'Vale': {'pos' : (3.322, 1.123), 'connections' : []},
+    'Louro': {'pos' : (-1.383, 2.4), 'connections' : []},
+    'Vilarinho': {'pos' : (-2.839, -2.616), 'connections' : []}
+}
+
+default_pos_bi = {
+    'Vila Nova de Famalicão': {'pos': (0, 0), 'connections': [('Gavião', 27), ('Antas', 22), ('Calendário', 27), ('Mouquim', 34), ('Louro', 40), ('Brufe', 30)]},
+    'Antas': {'pos' : (0.9, -1.2), 'connections' : [('Calendário', 39), ('Esmeriz', 26), ('Vale', 52)]},
+    'Calendário': {'pos' : (-1, -1.466), 'connections' : [('Brufe', 16), ('Antas', 39)]},
+    'Gavião': {'pos' : (1.052, 1.736), 'connections' : [('Vila Nova de Famalicão', 27), ('Vale', 35), ('Mouquim', 30), ('Antas', 50)]},
+    'Brufe': {'pos' : (-1.396, -0.1), 'connections' : [('Louro', 34), ('Outiz', 25), ('Calendário', 16)]},
+    'Outiz': {'pos' : (-2.92, 0.954), 'connections' : [('Vilarinho', 52), ('Louro', 27), ('Brufe', 25)]},
+    'Mouquim': {'pos' : (-0.447, 2.46), 'connections' : [('Louro', 16), ('Vila Nova de Famalicão', 34)]},
+    'Esmeriz': {'pos' : (0.469, -3.559), 'connections' : [('Antas', 26)]},
+    'Vale': {'pos' : (3.322, 1.123), 'connections' : [('Gavião', 35), ('Antas', 52)]},
+    'Louro': {'pos' : (-1.383, 2.4), 'connections' : [('Brufe', 34), ('Outiz', 27), ('Mouquim', 16)]},
+    'Vilarinho': {'pos' : (-2.839, -2.616), 'connections' : [('Outiz', 52)]}
+}
+
 
 class Grafo:
-    def __init__(self, graph_dict, graph_nx):
+    def __init__(self, graph_dict=default_pos_bi):
         self.nx = nx.Graph()
         self.g = graph_dict
         
-        for node, data in graph_nx.items():
+        for node, data in graph_dict.items():
             node_name = node
             node_pos = data.get('pos', (0, 0))  # Default position is (0, 0) if not specified
             self.nx.add_node(node_name, pos=node_pos)
 
             for connection, cost in data.get('connections', []):
                 self.nx.add_edge(node_name, connection, weight=cost)
-    
+
     
     def heuristicFunction(self, initial_node, goal_node):
         if initial_node in self.nx.nodes:
@@ -122,44 +163,41 @@ class Grafo:
             i = i + 1
         return custo
     
-    def procura_BFS(self, start, end):
-        # definir nodos visitados para evitar ciclos
-        visited = set()
-        fila = Queue()
-        expansao = []
-        # adicionar o nodo inicial à fila e aos visitados
-        fila.put(start)
-        visited.add(start)
-        # garantir que o start node não tem pais...
-        parent = dict()
-        parent[start] = None
-
-        path_found = False
-        while not fila.empty() and not path_found:
-            nodo_atual = fila.get()
-            expansao.append(nodo_atual)
-            if nodo_atual == end:
-                path_found = True
-            else:
-                for (adjacente, peso) in self.g[nodo_atual]:
-                    if (adjacente,) not in visited:
-                        fila.put((adjacente,))
-                        parent[(adjacente,)] = nodo_atual
-                        visited.add((adjacente,))
-
-        # Reconstruir o caminho
-        path = []
-        custo = 0
-        if path_found:
-            path.append(end)
-            while parent[end] is not None:
-                path.append(parent[end])
-                end = parent[end]
-            path.reverse()
-            # função calcula custo caminho
-            custo = self.calcula_custo(path)
-        return (path, custo, expansao)
     
+    def bfs(self, start, goal):
+        if goal == []:
+            return [start], 0, [start]
+        goals = goal.copy()
+        
+        queue = deque([(start, [start], 0)])
+        expansao = [start]
+        
+        visited = set([start])
+
+        
+        if start == goal:
+            return [start]
+
+        #pdb.set_trace()
+        while queue:
+            
+            current, path , totalCost= queue.popleft()
+            
+            for neighbor, cost in self.g[current]['connections']:
+                if neighbor not in visited:
+                    
+                    if neighbor in goals:
+                        goals.remove(neighbor)
+                        next_path, next_cost, next_expansao = self.bfs(neighbor, goals)
+                        return path + next_path, totalCost + cost + next_cost, expansao + next_expansao
+                    
+                    expansao = expansao + [neighbor]
+
+                    visited.add(neighbor)
+                    queue.append((neighbor, path + [neighbor], totalCost + cost))
+
+        # If no path is found
+        return None
     
     def custoUniforme (self, inicio, fim):
         # Inicialização
@@ -183,76 +221,140 @@ class Grafo:
 
         return float('inf'), [], []
 
-    # Cálculo da heurística, que para já ainda não usamos 
-    # def calculate_heuristic(node_start_pos, node_target_pos):
-    #     if node_start_pos is not None and node_target_pos is not None:
-    #         return ((node_start_pos[0] - node_target_pos[0]) ** 2 + (node_start_pos[1] - node_target_pos[1]) ** 2) ** 0.5 * 100
-    #     else:
-    #         return 0
+    def a_estrela(self, inicio, fim):
+        # Inicialização
+        fila_prioridade = [(0 + self.heuristicFunction(inicio, fim), inicio, [])]
+        visitados = set()
+        expansao = []
+
+        # Imprimir custos das arestas
+        #for node, connections in self.g.items():
+        #    for connection, cost in connections:
+        #        print(f"Aresta de {node} para {connection} com custo {cost}")
+
+        # Imprimir heurísticas
+        #for node, data in self.nx.nodes(data=True):
+        #    print(f'Nó: {node}, Heurística: {data["heuristic"]:.2f}')
+
+        while fila_prioridade:
+            (custo, no_atual, caminho) = heapq.heappop(fila_prioridade)
+            if no_atual not in visitados:
+                visitados.add(no_atual)
+                caminho = caminho + [no_atual]
+                expansao.append(no_atual)
+
+                if no_atual == fim:
+                    return round(custo, 2), caminho, expansao
+
+                for vizinho, custo_aresta in self.g[(no_atual, )]:
+                    if (vizinho,) not in visitados:
+                        # Adiciona custo da aresta e heurística do próximo nó
+                        custo_total_vizinho = custo - self.heuristicFunction(no_atual, fim) + custo_aresta + self.heuristicFunction(vizinho, fim)
+                        heapq.heappush(fila_prioridade, (custo_total_vizinho, vizinho, caminho))
+
+        return float('inf'), [], []
+
+    def caminhosParaDestino (self, Ponto_Partida, Pontos_Chegada):
+        A_star_path = []
+        A_star_cost = 0
+        A_star_expansao = []
+        partida = Ponto_Partida
+        for destino in Pontos_Chegada:
+            custo, caminho, expansao = self.a_estrela(partida, destino)
+            A_star_path = A_star_path + caminho
+            A_star_cost = A_star_cost + custo
+            A_star_expansao = A_star_expansao + expansao
+            partida = destino
+            
+        return A_star_path, A_star_cost, A_star_expansao
+            
+    def visualize_graph_with_heuristic(self, goal_node):
+        plt.clf()
+        plt.ion()
+        pos = nx.get_node_attributes(self.nx, 'pos')
+        edge_labels = {(node1, node2): f'{cost}' for (node1, node2, cost) in self.nx.edges.data('weight')}
+        
+        # Calculate heuristic values and position them slightly below the nodes
+        heuristic_labels = {node: (pos[node][0], pos[node][1] - 0.2, f'H = {self.heuristicFunction(node, goal_node)}') for node in self.nx.nodes}
+
+        nx.draw(self.nx, pos, with_labels=True, font_weight='bold', node_size=700, node_color='skyblue', font_size=8, font_color='black', edge_color='black', linewidths=1, alpha=0.7)
+        nx.draw_networkx_edge_labels(self.nx, pos, edge_labels=edge_labels, font_color='red', font_size=8)
+        
+        # Draw heuristic values with custom formatting
+        for node, (x, y, label) in heuristic_labels.items():
+            plt.text(x, y, label, color='red', fontweight='bold', fontsize=8, ha='center', va='center')
+
+        plt.show()
+        plt.ioff()
     
+    """ def visualize_solution(self, goal_node, path):
+        plt.clf()
+        plt.ion()
+        pos = nx.get_node_attributes(self.nx, 'pos')
+        edge_labels = {(node1, node2): f'{cost}' for (node1, node2, cost) in self.nx.edges.data('weight')}
+        
+        # Calculate heuristic values and position them slightly below the nodes
+        heuristic_labels = {node: (pos[node][0], pos[node][1] - 0.2, f'H = {self.heuristicFunction(node, goal_node)}') for node in self.nx.nodes}
 
-def visualize_graph(graph):
-    pos = nx.get_node_attributes(graph, 'pos') if 'pos' in nx.get_node_attributes(graph, 'pos') else nx.spring_layout(graph, seed=455)
-    labels = nx.get_edge_attributes(graph, 'weight')
-
-    nx.draw(graph, pos, with_labels=True, node_size=700, node_color='skyblue', font_size=10, font_color='black')
-    nx.draw_networkx_edge_labels(graph, pos, edge_labels=labels)
-
-    plt.title("Grafo Visual com Heurística")
-    plt.show()
+        nx.draw(self.nx, pos, with_labels=True, font_weight='bold', node_size=700, node_color='skyblue', font_size=8, font_color='black', edge_color='black', linewidths=1, alpha=0.7)
+        nx.draw_networkx_edge_labels(self.nx, pos, edge_labels=edge_labels, font_color='red', font_size=8)
+        
+        # Draw heuristic values with custom formatting
+        for node, (x, y, label) in heuristic_labels.items():
+            plt.text(x, y, label, color='red', fontweight='bold', fontsize=8, ha='center', va='center')
+            
+        a_star_edges = [(path[i], path[i + 1]) for i in range(len(path) - 1)]
+        nx.draw_networkx_edges(self.nx, pos, edgelist=a_star_edges, edge_color='green', width=2)
+        
+        plt.title("Graph with Heuristic Values")
+        plt.show()
+        plt.ioff() """
     
-def visualize_graph_with_heuristic(graph, goal_node):
-    pos = nx.get_node_attributes(graph.nx, 'pos')
-    edge_labels = {(node1, node2): f'{cost}' for (node1, node2, cost) in graph.nx.edges.data('weight')}
-    
-    # Calculate heuristic values and position them slightly below the nodes
-    heuristic_labels = {node: (pos[node][0], pos[node][1] - 0.2, f'H = {graph.heuristicFunction(node, goal_node)}') for node in graph.nx.nodes}
+    def visualize_solution(self, path, goals, algorithm, heuristic=False):
+        plt.clf()
+        plt.ion()
+        plt.title(algorithm + ": " + path[0] + " -> " + str(goals))
+        pos = nx.get_node_attributes(self.nx, 'pos')
+        edge_labels = {(node1, node2): f'{cost}' for (node1, node2, cost) in self.nx.edges.data('weight')}
 
-    nx.draw(graph.nx, pos, with_labels=True, font_weight='bold', node_size=700, node_color='skyblue', font_size=8, font_color='black', edge_color='black', linewidths=1, alpha=0.7)
-    nx.draw_networkx_edge_labels(graph.nx, pos, edge_labels=edge_labels, font_color='red', font_size=8)
-    
-    # Draw heuristic values with custom formatting
-    for node, (x, y, label) in heuristic_labels.items():
-        plt.text(x, y, label, color='red', fontweight='bold', fontsize=8, ha='center', va='center')
+        edges = [(path[i], path[i + 1]) for i in range(len(path) - 1)]
+        nx.draw_networkx_edges(self.nx, pos, edgelist=edges, edge_color='blue', width=4)
+            
+        nx.draw(self.nx, pos, with_labels=True, font_weight='bold', node_size=700, node_color='skyblue', font_size=8, font_color='black', edge_color='black', linewidths=1, alpha=0.7)
+        nx.draw_networkx_edge_labels(self.nx, pos, edge_labels=edge_labels, font_color='red', font_size=8)
+        
+        if not heuristic == False:
+            heuristic_labels = {node: (pos[node][0], pos[node][1] - 0.2, f'H = {self.heuristicFunction(node, goal_node)}') for node in self.nx.nodes}
+            for node, (x, y, label) in heuristic_labels.items():
+                plt.text(x, y, label, color='red', fontweight='bold', fontsize=8, ha='center', va='center')
+        
+        plt.show()
+        plt.ioff()
 
-    plt.title("Graph with Heuristic Values")
-    plt.show()
+    def visualize_graph(self):
+        plt.clf()
+        plt.ion()
+        plt.title("Grafo Inicial")
+        pos = nx.get_node_attributes(self.nx, 'pos')
+        edge_labels = {(node1, node2): f'{cost}' for (node1, node2, cost) in self.nx.edges.data('weight')}
 
-if __name__ == "__main__":
-    graph_dict = {
-        ('Vila Nova de Famalicão',): [('Gavião', 27), ('Antas', 22), ('Calendário', 27), ('Mouquim', 34), ('Louro', 40), ('Brufe', 30)],
-        ('Antas',): [('Calendário', 39), ('Esmeriz', 26), ('Vale', 52)],
-        ('Calendário',): [('Brufe', 16)],
-        ('Gavião', ): [('Vale', 35), ('Mouquim', 30), ('Antas', 50)],
-        ('Brufe', ): [('Louro', 34), ('Outiz', 25)],
-        ('Outiz', ): [('Vilarinho', 52), ('Louro', 27)],
-        ('Mouquim', ): [('Louro', 16)],
-        ('Esmeriz', ): [],
-        ('Vale', ): [],
-        ('Louro', ): [],
-        ('Vilarinho', ): []
-    }
-    
-    graph_pos_dict = {
-        'Vila Nova de Famalicão': {'pos': (0, 0), 'connections': [('Gavião', 27), ('Antas', 22), ('Calendário', 27), ('Mouquim', 34), ('Louro', 40), ('Brufe', 30)]},
-        'Antas': {'pos' : (0.9, -1.2), 'connections' : [('Calendário', 39), ('Esmeriz', 26), ('Vale', 52)]},
-        'Calendário': {'pos' : (-1, -1.466), 'connections' : [('Brufe', 16)]},
-        'Gavião': {'pos' : (1.052, 1.736), 'connections' : [('Vale', 35), ('Mouquim', 30), ('Antas', 50)]},
-        'Brufe': {'pos' : (-1.396, -0.1), 'connections' : [('Louro', 34), ('Outiz', 25)]},
-        'Outiz': {'pos' : (-2.92, 0.954), 'connections' : [('Vilarinho', 52), ('Louro', 27)]},
-        'Mouquim': {'pos' : (-0.447, 2.46), 'connections' : [('Louro', 16)]},
-        'Esmeriz': {'pos' : (0.469, -3.559), 'connections' : []},
-        'Vale': {'pos' : (3.322, 1.123), 'connections' : []},
-        'Louro': {'pos' : (-1.383, 2.4), 'connections' : []},
-        'Vilarinho': {'pos' : (-2.839, -2.616), 'connections' : []}
-    }
+        nx.draw(self.nx, pos, with_labels=True, font_weight='bold', node_size=700, node_color='skyblue', font_size=8, font_color='black', edge_color='black', linewidths=1, alpha=0.7)
+        nx.draw_networkx_edge_labels(self.nx, pos, edge_labels=edge_labels, font_color='red', font_size=8)
+
+        plt.show()
+        plt.ioff()
 
 
-graph = Grafo(graph_dict, graph_pos_dict)
+if __name__ == '__main__':
+    graph = Grafo()
+    print(graph.bfs('Vila Nova de Famalicão', ['Vale', 'Outiz']))
+
+""" graph = Grafo()
 #print(format_path(solution) + "\n" + format_path(expanded_nodes))
 print("DFS: ", graph.procura_DFS(('Vila Nova de Famalicão', ), ('Esmeriz', )))
 print("BFS: ", graph.procura_BFS(('Vila Nova de Famalicão', ), ('Esmeriz', )))
 print("UCS: ", graph.custoUniforme(('Vila Nova de Famalicão', ), ('Esmeriz', )))
 print("IDDFS: ", graph.iterative_deepening_dfs(('Vila Nova de Famalicão', ), ('Esmeriz', )))
+print(graph.caminhosParaDestino('Gavião', ['Louro']))
+graph.visualize_solution('Louro', ['Gavião', 'Mouquim', 'Louro']) """
 
-visualize_graph_with_heuristic(graph, 'Esmeriz')

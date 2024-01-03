@@ -12,7 +12,7 @@ class Entrega:
         return f"Identificador: {self.identificador}, Destino: {self.destino}, Peso: {self.peso}, Volume: {self.volume}, Tempo: {self.tempo}"
     
 
-def populate_entregas (path):
+def populateEntregas (path):
     entregas = []
     with open(path, 'r', encoding = 'utf-8') as arquivo_csv:
         leitor_csv = csv.reader(arquivo_csv, delimiter=';')
