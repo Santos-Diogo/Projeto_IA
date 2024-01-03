@@ -4,7 +4,7 @@ from queue import Queue
 import math
 import heapq
 import pdb
-from collections import OrderedDict, deque
+from collections import deque
 
 default_pos_bi = {
     'Vila Nova de Famalicão': {'pos': (0, 0), 'connections': [('Gavião', 27), ('Antas', 22), ('Calendário', 27), ('Mouquim', 34), ('Louro', 40), ('Brufe', 30)]},
@@ -25,6 +25,7 @@ class Grafo:
     def __init__(self, graph_dict=default_pos_bi):
         self.nx = nx.Graph()
         self.g = graph_dict
+        self.trainedHeuristic = {}
         
         for node, data in graph_dict.items():
             node_name = node
@@ -48,6 +49,25 @@ class Grafo:
         #Usa-se a distância entre dois pontos num plano como heuristica com uma escala
         heuristic = (((goal_pos[0] - initial_pos[0]) **2 + (goal_pos[1] - initial_pos[1]) **2) **0.5) * 10
         return math.floor(heuristic)
+    
+    def trainedHeuristicFunction(self, initial_node, goal_node):
+        if initial_node not in self.nx.nodes:
+            raise KeyError (f"{initial_node} does not exist in the graph")
+        if goal_node not in self.nx.nodes:
+            raise KeyError (f"{goal_node} does not exist in the graph")
+        if initial_node in self.trainedHeuristic:
+            for item in self.trainedHeuristic[initial_node]:
+                if item[0] == goal_node:
+                    return item[1]  
+        return None
+    
+    def heuristicPath(self, start, goals):
+        heuristicSum = 0
+        begin = start
+        for goal in goals:
+            heuristicSum = heuristicSum + self.heuristicFunction(begin, goal)
+            begin = goal
+        return heuristicSum
     
     def iddfs(self, start, goal, depth):
         expansao = []
@@ -123,11 +143,11 @@ class Grafo:
 
         return None
     
-    def busca_gulosa(self, inicio, objetivos, destinos=None):
+    def busca_gulosa(self, inicio, objetivos, function, destinos=None):
         if objetivos == []:
             return [], 0, [], []
         for objetivo in objetivos:
-            fronteira = [(self.heuristicFunction(inicio, objetivo), inicio, [inicio], 0)]
+            fronteira = [(function(inicio, objetivo), inicio, [inicio], 0)]
         explorados = set()
         expansao = []
         if destinos is None:
@@ -153,7 +173,7 @@ class Grafo:
                         new_path = path + [vizinho]
                         new_custo = custo + cost
                         for objetivo in objetivos:
-                            heapq.heappush(fronteira, (self.heuristicFunction(vizinho, objetivo), vizinho, new_path, new_custo))
+                            heapq.heappush(fronteira, (function(vizinho, objetivo), vizinho, new_path, new_custo))
 
         return None
     
@@ -218,12 +238,12 @@ class Grafo:
 
         return [], float('inf'), []
 
-    def a_estrela(self, inicio, fins, destinos=None):
+    def a_estrela(self, inicio, fins, function, destinos=None):
         # Inicialização
         if fins == []:
             return [], 0, [], []
         for fim in fins:
-            fila_prioridade = [(0 + self.heuristicFunction(inicio, fim), inicio, [])]
+            fila_prioridade = [(0 + function(inicio, fim), inicio, [])]
         visitados = set()
         expansao = []
         if destinos is None:
@@ -245,11 +265,21 @@ class Grafo:
                 for vizinho, custo_aresta in self.g[no_atual]['connections']:
                     if vizinho not in visitados:
                         # Adiciona custo da aresta e heurística do próximo nó
-                        custo_total_vizinho = custo - self.heuristicFunction(no_atual, fim) + custo_aresta + self.heuristicFunction(vizinho, fim)
+                        custo_total_vizinho = custo - function(no_atual, fim) + custo_aresta + function(vizinho, fim)
                         heapq.heappush(fila_prioridade, (custo_total_vizinho, vizinho, caminho))
 
-        return 0, float('inf'), []
+        return [], float('inf'), [], []
 
+
+    def trainHeuristic (self):
+        for node, data in self.g.items():
+            for conn, _ in data['connections']:
+                path, _, _, _ = self.a_estrela(node, [conn], self.heuristicFunction)
+                newheuristic = self.heuristicPath(node, path)
+                if node in self.trainedHeuristic:
+                    self.trainedHeuristic[node].append((conn, newheuristic))
+                else:
+                    self.trainedHeuristic[node] = [(conn, newheuristic)]
             
     def visualize_graph_with_heuristic(self, goal_nodes):
         plt.clf()
@@ -341,7 +371,8 @@ class Grafo:
 
 if __name__ == '__main__':
     graph = Grafo()
-    print(graph.iddfs_tsp('Vila Nova de Famalicão', ['Outiz', 'Vale']))
+    graph.trainHeuristic()
+    print(graph.trainedHeuristic)
 
 """ graph = Grafo()
 #print(format_path(solution) + "\n" + format_path(expanded_nodes))

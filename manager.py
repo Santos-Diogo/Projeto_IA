@@ -8,6 +8,7 @@ class Manager:
         self.graph = Grafo()
         self.estafetas = populateEstafetas('Dataset/Estafetas.csv')
         self.entregas = populateEntregas('Dataset/Entregas.csv')
+        self.trained = False
         
     def destinosEntregas (self, ids):
         destinos = []
@@ -56,39 +57,29 @@ class Manager:
     def resolverGreedy(self, estafetaID):
         estafeta = self.estafetas[estafetaID-1]
         destinos = self.destinosEntregas(estafeta.Lista_Encomendas)
-        a, b, c, dest= self.graph.busca_gulosa(estafeta.Ponto_Partida, destinos)
+        if self.trained:
+            a, b, c, dest= self.graph.busca_gulosa(estafeta.Ponto_Partida, destinos, self.graph.trainedHeuristicFunction)
+        else:
+            a, b, c, dest= self.graph.busca_gulosa(estafeta.Ponto_Partida, destinos, self.graph.heuristicFunction)
         return a, b, c, dest
     
     def resolverA_Star(self, estafetaID):
         estafeta = self.estafetas[estafetaID-1]
         destinos = self.destinosEntregas(estafeta.Lista_Encomendas)
-        a, b, c, dest= self.graph.a_estrela(estafeta.Ponto_Partida, destinos)
+        if self.trained:
+            a, b, c, dest= self.graph.a_estrela(estafeta.Ponto_Partida, destinos, self.graph.trainedHeuristicFunction)
+        else:
+            a, b, c, dest= self.graph.a_estrela(estafeta.Ponto_Partida, destinos, self.graph.heuristicFunction)
         return a, b, c, dest
+    
+    def train(self):
+        self.graph.trainHeuristic()
+        self.trained = True
     
     def estafetaInfo (self, id):
         for estafeta in self.estafetas:
             if id == estafeta.Id:
                 return str(estafeta) + ", Destinos: " + str(self.destinosEntregas(estafeta.Lista_Encomendas))
-
-    def __entregaByID (self, entregaID):
-        for entrega in self.entregas:
-            if entrega.identificador == entregaID:
-                return entrega
-        raise KeyError (f"Não existe entregas com o ID {entregaID}")
         
-    def concluiEstafeta (self, estafeta):
-        estafetaObj = self.estafetas[estafeta-1]
-        encomendas = estafetaObj.Lista_Encomendas
-        ponto_inicio = estafetaObj.Ponto_Partida
-        entregas_estafeta = []
-        destinos = []
-        for encomenda in encomendas:
-            entrega = self.__entregaByID(encomenda)
-            destinos.append(entrega.destino)
-            entregas_estafeta.append(entrega)
-
-        
-        fim = self.graph.caminhosParaDestino(ponto_inicio, destinos)
-        self.graph.visualize_solution(destinos[0], fim[0])
-    
-    
+    def concluiEstafeta (self, estafetaID):
+        estafeta = self.estafetas[estafetaID-1]

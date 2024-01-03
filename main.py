@@ -72,23 +72,27 @@ class Menu:
     def iniciar(self):
         while True:
             print("1. Mostrar Grafo")
-            print("2. Adicionar Heuristica")
-            print("3. Escolher estafeta para correr o programa")
-            print("4. Exit")
+            print("2. Treinar Heurística")
+            print("3. Adicionar Heurística")
+            print("4. Escolher estafeta para correr o programa")
+            print("5. Exit")
 
-            choice = input("Insira a sua escolha (1-4): ")
+            choice = input("Insira a sua escolha (1-5): ")
 
             if choice == '1':
                 self.manager.graph.visualize_graph()
             elif choice == '2':
-                self.__adicionarHeuristica()
+                self.manager.train()
+                print("Heurística treinada")
             elif choice == '3':
-                self.__escolherEstafeta()
+                self.__adicionarHeuristica()
             elif choice == '4':
+                self.__escolherEstafeta()
+            elif choice == '5':
                 print("Exiting program.")
                 break
             else:
-                print("Invalid choice. Please enter a number between 1 and 4.")
+                print("Invalid choice. Please enter a number between 1 and 5.")
 
 
 if __name__ == "__main__":
