@@ -1,5 +1,5 @@
 from manager import Manager
-
+import pdb
 
 class Menu:
     def __init__(self):
@@ -8,10 +8,13 @@ class Menu:
 
     def __adicionarHeuristica (self):
         choice = input("Escolha o nó para a heurística se basear: ")
-        if choice in self.manager.graph.nx.nodes:
-            self.manager.graph.visualize_graph_with_heuristic(choice)
-        else:
-            print("O nó que escolheu não existe...")
+        ch_list = [item.strip() for item in choice.split(',')]
+        present = True
+        for element in ch_list:
+            if element not in self.manager.graph.nx.nodes:
+                print("Um dos nós que escolheu não existe...")
+                return
+        self.manager.graph.visualize_graph_with_heuristic(ch_list)
 
 
     def __menuEstafeta (self, estafeta):
@@ -28,12 +31,28 @@ class Menu:
         
         if choice == '1':
             caminho, custo, expansao, destinos= self.manager.resolverBFS(estafeta.Id)
-            print (f"Custo: {custo}; Expansão: {expansao}")
+            print (f"Caminho: {caminho}; Custo: {custo}; Expansão: {expansao}")
             self.manager.graph.visualize_solution(caminho, destinos, "BFS")
         elif choice == '2':
-            self.__adicionarHeuristica()
+            caminho, custo, expansao, destinos= self.manager.resolverDFS(estafeta.Id)
+            print (f"Caminho: {caminho}; Custo: {custo}; Expansão: {expansao}")
+            self.manager.graph.visualize_solution(caminho, destinos, "DFS")
         elif choice == '3':
-            self.__escolherEstafeta()
+            caminho, custo, expansao, destinos= self.manager.resolverIDDFS(estafeta.Id)
+            print (f"Caminho: {caminho}; Custo: {custo}; Expansão: {expansao}")
+            self.manager.graph.visualize_solution(caminho, destinos, "IDDFS")
+        elif choice == '4':
+            caminho, custo, expansao, destinos= self.manager.resolverCustoUniforme(estafeta.Id)
+            print (f"Caminho: {caminho}; Custo: {custo}; Expansão: {expansao}")
+            self.manager.graph.visualize_solution(caminho, destinos, "Custo Uniforme")
+        elif choice == '5':
+            caminho, custo, expansao, destinos= self.manager.resolverGreedy(estafeta.Id)
+            print (f"Caminho: {caminho}; Custo: {custo}; Expansão: {expansao}")
+            self.manager.graph.visualize_solution(caminho, destinos, "Greedy", True)
+        elif choice == '6':
+            caminho, custo, expansao, destinos= self.manager.resolverA_Star(estafeta.Id)
+            print (f"Caminho: {caminho}; Custo: {custo}; Expansão: {expansao}")
+            self.manager.graph.visualize_solution(caminho, destinos, "A*", True)
         elif choice == '8':
             return
         else:

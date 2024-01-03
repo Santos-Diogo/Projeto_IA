@@ -6,46 +6,17 @@ import heapq
 import pdb
 from collections import OrderedDict, deque
 
-
-default = {
-    ('Vila Nova de Famalicão',): [('Gavião', 27), ('Antas', 22), ('Calendário', 27), ('Mouquim', 34), ('Louro', 40), ('Brufe', 30)],
-    ('Antas',): [('Calendário', 39), ('Esmeriz', 26), ('Vale', 52)],
-    ('Calendário',): [('Brufe', 16)],
-    ('Gavião', ): [('Vale', 35), ('Mouquim', 30), ('Antas', 50)],
-    ('Brufe', ): [('Louro', 34), ('Outiz', 25)],
-    ('Outiz', ): [('Vilarinho', 52), ('Louro', 27)],
-    ('Mouquim', ): [('Louro', 16)],
-    ('Esmeriz', ): [],
-    ('Vale', ): [],
-    ('Louro', ): [],
-    ('Vilarinho', ): []
-}
-
-default_pos = {
-    'Vila Nova de Famalicão': {'pos': (0, 0), 'connections': [('Gavião', 27), ('Antas', 22), ('Calendário', 27), ('Mouquim', 34), ('Louro', 40), ('Brufe', 30)]},
-    'Antas': {'pos' : (0.9, -1.2), 'connections' : [('Calendário', 39), ('Esmeriz', 26), ('Vale', 52)]},
-    'Calendário': {'pos' : (-1, -1.466), 'connections' : [('Brufe', 16)]},
-    'Gavião': {'pos' : (1.052, 1.736), 'connections' : [('Vila Nova de Famalicão', 27), ('Vale', 35), ('Mouquim', 30), ('Antas', 50)]},
-    'Brufe': {'pos' : (-1.396, -0.1), 'connections' : [('Louro', 34), ('Outiz', 25)]},
-    'Outiz': {'pos' : (-2.92, 0.954), 'connections' : [('Vilarinho', 52), ('Louro', 27)]},
-    'Mouquim': {'pos' : (-0.447, 2.46), 'connections' : [('Louro', 16)]},
-    'Esmeriz': {'pos' : (0.469, -3.559), 'connections' : []},
-    'Vale': {'pos' : (3.322, 1.123), 'connections' : []},
-    'Louro': {'pos' : (-1.383, 2.4), 'connections' : []},
-    'Vilarinho': {'pos' : (-2.839, -2.616), 'connections' : []}
-}
-
 default_pos_bi = {
     'Vila Nova de Famalicão': {'pos': (0, 0), 'connections': [('Gavião', 27), ('Antas', 22), ('Calendário', 27), ('Mouquim', 34), ('Louro', 40), ('Brufe', 30)]},
-    'Antas': {'pos' : (0.9, -1.2), 'connections' : [('Calendário', 39), ('Esmeriz', 26), ('Vale', 52)]},
-    'Calendário': {'pos' : (-1, -1.466), 'connections' : [('Brufe', 16), ('Antas', 39)]},
+    'Antas': {'pos' : (0.9, -1.2), 'connections' : [('Vila Nova de Famalicão', 22), ('Calendário', 39), ('Esmeriz', 26), ('Vale', 52)]},
+    'Calendário': {'pos' : (-1, -1.466), 'connections' : [('Vila Nova de Famalicão', 27), ('Brufe', 16), ('Antas', 39)]},
     'Gavião': {'pos' : (1.052, 1.736), 'connections' : [('Vila Nova de Famalicão', 27), ('Vale', 35), ('Mouquim', 30), ('Antas', 50)]},
-    'Brufe': {'pos' : (-1.396, -0.1), 'connections' : [('Louro', 34), ('Outiz', 25), ('Calendário', 16)]},
+    'Brufe': {'pos' : (-1.396, -0.1), 'connections' : [('Vila Nova de Famalicão', 30), ('Louro', 34), ('Outiz', 25), ('Calendário', 16)]},
     'Outiz': {'pos' : (-2.92, 0.954), 'connections' : [('Vilarinho', 52), ('Louro', 27), ('Brufe', 25)]},
-    'Mouquim': {'pos' : (-0.447, 2.46), 'connections' : [('Louro', 16), ('Vila Nova de Famalicão', 34)]},
+    'Mouquim': {'pos' : (-0.447, 2.46), 'connections' : [('Louro', 16), ('Vila Nova de Famalicão', 34), ('Gavião', 30)]},
     'Esmeriz': {'pos' : (0.469, -3.559), 'connections' : [('Antas', 26)]},
     'Vale': {'pos' : (3.322, 1.123), 'connections' : [('Gavião', 35), ('Antas', 52)]},
-    'Louro': {'pos' : (-1.383, 2.4), 'connections' : [('Brufe', 34), ('Outiz', 27), ('Mouquim', 16)]},
+    'Louro': {'pos' : (-1.383, 2.4), 'connections' : [('Vila Nova de Famalicão', 40), ('Brufe', 34), ('Outiz', 27), ('Mouquim', 16)]},
     'Vilarinho': {'pos' : (-2.839, -2.616), 'connections' : [('Outiz', 52)]}
 }
 
@@ -78,91 +49,113 @@ class Grafo:
         heuristic = (((goal_pos[0] - initial_pos[0]) **2 + (goal_pos[1] - initial_pos[1]) **2) **0.5) * 10
         return math.floor(heuristic)
     
+    def iddfs(self, start, goal, depth):
+        expansao = []
+        def depth_limited_dfs(current, goal, depth_limit):
+            return recursive_dfs(current, goal, depth_limit, 0, [], 0)
 
-                
-    def iterative_deepening_dfs(self, start, target):
-        path = []  # Caminho para a solução
-        order_of_expansion = []  # Ordem de expansão
-        def dfs(node, depth):
-            order_of_expansion.append(node)
-            if node == target:
-                path.append(node)
-                return True
-            if depth > 0:
-                for child in self.g.get(node, []):
-                    if dfs((child[0], ), depth - 1):
-                        path.append(node)
-                        return True
-            return False
+        def recursive_dfs(current, goal, depth_limit, current_depth, path, cost):
+            expansao.append(current)
+            if current in goal:
+                return path + [current], current, expansao, cost, depth_limit
 
-        depth = 0
-        while not dfs(start, depth):
-            depth += 1
+            if current_depth == depth_limit:
+                return None
 
-        unique_list = list(OrderedDict.fromkeys(order_of_expansion))
-        return path[::-1], unique_list, depth
-    
-    def procura_DFS(self, ponto_inicial, ponto_objetivo):
-        visitados = set() #armazenar nós visitados
-        ordem_expansao = [] #Lista para armazenar a ordem de expansão dos nós
-        
-        #função auxiliar para converter tuplos em listas
-        def converter_tuplos_para_lista(tuplos):
-            return [item[0] for item in tuplos]
+            for neighbor, custo in self.g[current]['connections']:
+                if neighbor not in path:
+                    result = recursive_dfs(neighbor, goal, depth_limit, current_depth + 1, path + [current], cost + custo)
+                    if result is not None:
+                        return result
 
-        #função para calcular o custo total dos arcos num dado caminho
-        def calcular_custo_arcos(caminho):
-            custo = 0
-            for i in range(len(caminho) - 1):
-                no_atual = caminho[i]
-                no_seguinte = caminho[i + 1]
-                for vizinho, custo_arco in self.g[no_atual]:
-                    if vizinho == no_seguinte:
-                        custo += custo_arco
-                        break
-            return custo
-
-        #função principal da procura em profundidade 
-        def DFS(atual, caminho, custo):
-            visitados.add(atual)
-            ordem_expansao.append(atual)
-            caminho.append(atual)
-
-            if atual == ponto_objetivo: #verifica se o nó atual é o objetivo
-                return caminho, custo
-
-            for vizinho, custo_arco in self.g[atual]:
-                if vizinho not in visitados:
-                    novo_custo = custo + custo_arco
-                    resultado = DFS((vizinho, ), caminho.copy(), novo_custo)
-                    if resultado:
-                        return resultado
-            
             return None
+        
+        while True:
+            result = depth_limited_dfs(start, goal, depth)
+            if result is not None:
+                return result
+            depth += 1
+    
+    def iddfs_tsp(self, start, goalss):
+        goals = goalss.copy()
+        expansao = []
+        node = start
+        custoTotal = 0
+        path = []
+        initial_depth = 0
+        while (goals != []):
+            next_path, goal, next_expansao, next_custo, depth = self.iddfs(node, goals, initial_depth)
+            path = path[:-1] + next_path
+            expansao = expansao[:-1] + next_expansao
+            custoTotal = custoTotal + next_custo
+            goals.remove(goal)
+            node = goal
+            initial_depth = depth
+        
+        return path, custoTotal, expansao
+    
+    def dfs_search_tsp(self, start, goals, visited=None, path=None, expansao=None, custo=None):
+        if visited is None:
+            visited = set()
+        if path is None:
+            path = []
+        if expansao is None:
+            expansao = []
+        if custo is None:
+            custo = 0
 
-        #inicia a procura DFS
-        caminho, custo = DFS(ponto_inicial, [], 0)
-        ordem_expansao = converter_tuplos_para_lista(ordem_expansao)
-        unique_list = list(OrderedDict.fromkeys(ordem_expansao))
-        return caminho, unique_list, custo
+        visited.add(start)
+        path.append(start)
+        expansao.append(start)
+
+        if start in goals:
+            goals.remove(start)
+            visited = set()
+            if not goals:
+                return path, custo, expansao
+
+        for neighbor, cost in self.g[start]['connections']:
+            if neighbor not in visited:
+                custo = custo + cost
+                result = self.dfs_search_tsp(neighbor, goals.copy(), visited, path.copy(), expansao, custo)
+                if result:
+                    return result
+
+        return None
     
-    def get_arc_cost(self, node1, node2):
-        custoT = math.inf
-        lis = self.g[node1]  # lista de arestas para aquele nodo
-        for (nodo, custo) in lis:
-            if nodo == node2[0]:
-                custoT = custo
-        return custoT
-    
-    def calcula_custo(self, caminho):
-        teste = caminho
-        custo = 0
-        i = 0
-        while i + 1 < len(teste):
-            custo = custo + self.get_arc_cost(teste[i], teste[i + 1])
-            i = i + 1
-        return custo
-    
+    def busca_gulosa(self, inicio, objetivos, destinos=None):
+        if objetivos == []:
+            return [], 0, [], []
+        for objetivo in objetivos:
+            fronteira = [(self.heuristicFunction(inicio, objetivo), inicio, [inicio], 0)]
+        explorados = set()
+        expansao = []
+        if destinos is None:
+            destinos = []
+
+        while fronteira:
+            _, estado_atual, path, custo = heapq.heappop(fronteira)
+
+            if estado_atual in objetivos:
+                # Se chegamos ao objetivo, retornamos o caminho
+                objetivos.remove(estado_atual)
+                destinos.append(estado_atual)
+                next_path, next_custo, next_expansao, _ = self.busca_gulosa(estado_atual, objetivos, destinos)
+                return path + next_path[1:], custo + next_custo, expansao + [estado_atual] + next_expansao[1:], destinos
+
+            if estado_atual not in explorados:
+                explorados.add(estado_atual)
+                expansao.append(estado_atual)
+
+                # Expandir os vizinhos e adicionar à fronteira
+                for vizinho, cost in self.g[estado_atual]['connections']:
+                    if vizinho not in explorados:
+                        new_path = path + [vizinho]
+                        new_custo = custo + cost
+                        for objetivo in objetivos:
+                            heapq.heappush(fronteira, (self.heuristicFunction(vizinho, objetivo), vizinho, new_path, new_custo))
+
+        return None
     
     def bfs(self, start, goal):
         if goal == []:
@@ -178,7 +171,6 @@ class Grafo:
         if start == goal:
             return [start]
 
-        #pdb.set_trace()
         while queue:
             
             current, path , totalCost= queue.popleft()
@@ -199,8 +191,11 @@ class Grafo:
         # If no path is found
         return None
     
-    def custoUniforme (self, inicio, fim):
+    def custoUniforme (self, inicio, fins):
         # Inicialização
+        if fins == []:
+            return [], 0, []
+        finss = fins.copy()
         fila_prioridade = [(0, inicio, [])]
         visitados = set()
         expansao = []
@@ -211,30 +206,28 @@ class Grafo:
                 visitados.add(no_atual)
                 caminho = caminho + [no_atual]
                 expansao.append(no_atual)
+                 
+                if no_atual in finss:
+                    finss.remove(no_atual)
+                    next_caminho, next_custo, next_expansao = self.custoUniforme(no_atual, finss)
+                    return (caminho + next_caminho[1:], custo + next_custo, expansao + next_expansao[1:])
 
-                if no_atual == fim:
-                    return (custo, caminho, expansao)
+                for vizinho, custo_aresta in self.g[no_atual]['connections']:
+                    if vizinho not in visitados:
+                        heapq.heappush(fila_prioridade, (custo + custo_aresta, vizinho, caminho))
 
-                for vizinho, custo_aresta in self.g[no_atual]:
-                    if (vizinho,) not in visitados:
-                        heapq.heappush(fila_prioridade, (custo + custo_aresta, (vizinho, ), caminho))
+        return [], float('inf'), []
 
-        return float('inf'), [], []
-
-    def a_estrela(self, inicio, fim):
+    def a_estrela(self, inicio, fins, destinos=None):
         # Inicialização
-        fila_prioridade = [(0 + self.heuristicFunction(inicio, fim), inicio, [])]
+        if fins == []:
+            return [], 0, [], []
+        for fim in fins:
+            fila_prioridade = [(0 + self.heuristicFunction(inicio, fim), inicio, [])]
         visitados = set()
         expansao = []
-
-        # Imprimir custos das arestas
-        #for node, connections in self.g.items():
-        #    for connection, cost in connections:
-        #        print(f"Aresta de {node} para {connection} com custo {cost}")
-
-        # Imprimir heurísticas
-        #for node, data in self.nx.nodes(data=True):
-        #    print(f'Nó: {node}, Heurística: {data["heuristic"]:.2f}')
+        if destinos is None:
+            destinos = []
 
         while fila_prioridade:
             (custo, no_atual, caminho) = heapq.heappop(fila_prioridade)
@@ -244,44 +237,39 @@ class Grafo:
                 expansao.append(no_atual)
 
                 if no_atual == fim:
-                    return round(custo, 2), caminho, expansao
+                    fins.remove(no_atual)
+                    destinos.append(no_atual)
+                    next_path, next_custo, next_expansao, _ = self.a_estrela(no_atual, fins, destinos)
+                    return caminho + next_path[1:], round(custo, 2) + next_custo, expansao + next_expansao[1:], destinos
 
-                for vizinho, custo_aresta in self.g[(no_atual, )]:
-                    if (vizinho,) not in visitados:
+                for vizinho, custo_aresta in self.g[no_atual]['connections']:
+                    if vizinho not in visitados:
                         # Adiciona custo da aresta e heurística do próximo nó
                         custo_total_vizinho = custo - self.heuristicFunction(no_atual, fim) + custo_aresta + self.heuristicFunction(vizinho, fim)
                         heapq.heappush(fila_prioridade, (custo_total_vizinho, vizinho, caminho))
 
-        return float('inf'), [], []
+        return 0, float('inf'), []
 
-    def caminhosParaDestino (self, Ponto_Partida, Pontos_Chegada):
-        A_star_path = []
-        A_star_cost = 0
-        A_star_expansao = []
-        partida = Ponto_Partida
-        for destino in Pontos_Chegada:
-            custo, caminho, expansao = self.a_estrela(partida, destino)
-            A_star_path = A_star_path + caminho
-            A_star_cost = A_star_cost + custo
-            A_star_expansao = A_star_expansao + expansao
-            partida = destino
             
-        return A_star_path, A_star_cost, A_star_expansao
-            
-    def visualize_graph_with_heuristic(self, goal_node):
+    def visualize_graph_with_heuristic(self, goal_nodes):
         plt.clf()
         plt.ion()
+        plt.title("Grafo com heurísticas em " + str (goal_nodes))
         pos = nx.get_node_attributes(self.nx, 'pos')
         edge_labels = {(node1, node2): f'{cost}' for (node1, node2, cost) in self.nx.edges.data('weight')}
-        
+        heuristic_labels = []
+        offset = 0.2
         # Calculate heuristic values and position them slightly below the nodes
-        heuristic_labels = {node: (pos[node][0], pos[node][1] - 0.2, f'H = {self.heuristicFunction(node, goal_node)}') for node in self.nx.nodes}
+        for goal_node in goal_nodes:
+            temp = [(pos[node][0], pos[node][1] - offset, f'H = {self.heuristicFunction(node, goal_node)}') for node in self.nx.nodes]
+            heuristic_labels = heuristic_labels + temp
+            offset = offset + 0.2
 
         nx.draw(self.nx, pos, with_labels=True, font_weight='bold', node_size=700, node_color='skyblue', font_size=8, font_color='black', edge_color='black', linewidths=1, alpha=0.7)
         nx.draw_networkx_edge_labels(self.nx, pos, edge_labels=edge_labels, font_color='red', font_size=8)
         
         # Draw heuristic values with custom formatting
-        for node, (x, y, label) in heuristic_labels.items():
+        for (x, y, label) in heuristic_labels:
             plt.text(x, y, label, color='red', fontweight='bold', fontsize=8, ha='center', va='center')
 
         plt.show()
@@ -323,9 +311,15 @@ class Grafo:
         nx.draw(self.nx, pos, with_labels=True, font_weight='bold', node_size=700, node_color='skyblue', font_size=8, font_color='black', edge_color='black', linewidths=1, alpha=0.7)
         nx.draw_networkx_edge_labels(self.nx, pos, edge_labels=edge_labels, font_color='red', font_size=8)
         
-        if not heuristic == False:
-            heuristic_labels = {node: (pos[node][0], pos[node][1] - 0.2, f'H = {self.heuristicFunction(node, goal_node)}') for node in self.nx.nodes}
-            for node, (x, y, label) in heuristic_labels.items():
+        if heuristic:
+            heuristic_labels = []
+            offset = 0.2
+            # Calculate heuristic values and position them slightly below the nodes
+            for goal_node in goals:
+                temp = [(pos[node][0], pos[node][1] - offset, f'H = {self.heuristicFunction(node, goal_node)}') for node in self.nx.nodes]
+                heuristic_labels = heuristic_labels + temp
+                offset = offset + 0.2
+            for (x, y, label) in heuristic_labels:
                 plt.text(x, y, label, color='red', fontweight='bold', fontsize=8, ha='center', va='center')
         
         plt.show()
@@ -347,7 +341,7 @@ class Grafo:
 
 if __name__ == '__main__':
     graph = Grafo()
-    print(graph.bfs('Vila Nova de Famalicão', ['Vale', 'Outiz']))
+    print(graph.iddfs_tsp('Vila Nova de Famalicão', ['Outiz', 'Vale']))
 
 """ graph = Grafo()
 #print(format_path(solution) + "\n" + format_path(expanded_nodes))

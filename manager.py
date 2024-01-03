@@ -17,13 +17,53 @@ class Manager:
                     destinos.append(entrega.destino)
         return destinos
     
+    def rotaBicicleta(kms, peso):
+        vel = 10 - (peso * 0.6)
+        return (kms * 60) / vel
+    
+    def rotaMota(kms, peso):
+        vel = 35 - (peso * 0.5)
+        return (kms * 60) / vel
+    
+    def rotaCarro(kms, peso):
+        vel = 50 - (peso * 0.1)
+        return (kms * 60) / vel
+    
     def resolverBFS(self, estafetaID):
         estafeta = self.estafetas[estafetaID-1]
         destinos = self.destinosEntregas(estafeta.Lista_Encomendas)
         a, b, c = self.graph.bfs(estafeta.Ponto_Partida, destinos)
         return a, b, c, destinos
         
-                
+    def resolverDFS(self, estafetaID):
+        estafeta = self.estafetas[estafetaID-1]
+        destinos = self.destinosEntregas(estafeta.Lista_Encomendas)
+        a, b, c = self.graph.dfs_search_tsp(estafeta.Ponto_Partida, destinos)
+        return a, b, c, destinos
+    
+    def resolverIDDFS(self, estafetaID):
+        estafeta = self.estafetas[estafetaID-1]
+        destinos = self.destinosEntregas(estafeta.Lista_Encomendas)
+        a, b, c = self.graph.iddfs_tsp(estafeta.Ponto_Partida, destinos)
+        return a, b, c, destinos
+
+    def resolverCustoUniforme(self, estafetaID):
+        estafeta = self.estafetas[estafetaID-1]
+        destinos = self.destinosEntregas(estafeta.Lista_Encomendas)
+        a, b, c = self.graph.custoUniforme(estafeta.Ponto_Partida, destinos)
+        return a, b, c, destinos
+    
+    def resolverGreedy(self, estafetaID):
+        estafeta = self.estafetas[estafetaID-1]
+        destinos = self.destinosEntregas(estafeta.Lista_Encomendas)
+        a, b, c, dest= self.graph.busca_gulosa(estafeta.Ponto_Partida, destinos)
+        return a, b, c, dest
+    
+    def resolverA_Star(self, estafetaID):
+        estafeta = self.estafetas[estafetaID-1]
+        destinos = self.destinosEntregas(estafeta.Lista_Encomendas)
+        a, b, c, dest= self.graph.a_estrela(estafeta.Ponto_Partida, destinos)
+        return a, b, c, dest
     
     def estafetaInfo (self, id):
         for estafeta in self.estafetas:
