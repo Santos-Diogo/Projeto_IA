@@ -83,13 +83,16 @@ class Manager:
     def resolver(self, estafetaID):
         estafeta = self.estafetas[estafetaID-1]
         destinos = self.destinosEntregas(estafeta.Lista_Encomendas)
+        alg = ""
+        minCusto = 800000
         pathBFS, custoBFS, expansaoBFS, destinosBFS = self.resolverBFS(estafetaID)
         pathDFS, custoDFS, expansaoDFS, destinosDFS = self.resolverDFS(estafetaID)
         pathIDDFS, custoIDDFS, expansaoIDDFS, destinosIDDFS = self.resolverIDDFS(estafetaID)
         pathCUn, custoCUn, expansaoCUn, destinosCUn = self.resolverCustoUniforme(estafetaID)
         pathGreedy, custoGreedy, expansaoGreedy, destinosGreedy = self.resolverGreedy(estafetaID)
         patha_star, custoa_star, expansaoa_star, destinosa_star = self.resolverA_Star(estafetaID)
-        minCusto = min([custoBFS, custoa_star, custoCUn, custoDFS, custoGreedy, custoIDDFS])
+        
+        
         
         
     def pesos(self, entregas):

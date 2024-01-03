@@ -1,8 +1,8 @@
 ﻿Identificador;Destino;Peso (Kg);Volume (cm^3);Tempo (Min)
-1;Antas;1;3158;10
+1;Vilarinho;1;3158;10
 2;Mouquim;3;63662;5
-3;Vilarinho;6;155704;45
-4;Seide;20;197576;40
+3;Vila Nova de Famalicão;6;155704;45
+4;Moquim;20;197576;40
 5;Brufe;48;926217;35
 6;Mouquim;97;1026978;25
 7;Louro;10;1031470;30
@@ -16,7 +16,7 @@
 15;Vila Nova de Famalicão;60;1204785;180
 16;Antas;9;345678;35
 17;Vilarinho;18;876543;90
-18;Outiz;60;789012;45
+18;Vale;60;789012;45
 19;Mouquim;15;345678;25
 20;Louro;2;12345;15
 21;Calendário;4;98765;10
