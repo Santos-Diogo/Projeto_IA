@@ -156,7 +156,6 @@ class Manager:
         entregas = self.entregasEstafeta(estafeta.Lista_Encomendas)
         sorted_objects = sorted(entregas, key=lambda obj: obj.tempo)
         custo_otimo = self.resolver(estafetaID)
-        pdb.set_trace()
         pesos = self.pesos(sorted_objects)
         if pesos <= 5:
             tempo = self.rotaBicicleta(custo_otimo[2], pesos)
