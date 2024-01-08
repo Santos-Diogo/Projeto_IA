@@ -181,7 +181,6 @@ class Grafo:
         if goal == []:
             return [start], 0, [start]
         goals = goal.copy()
-        
         queue = deque([(start, [start], 0)])
         expansao = [start]
         
@@ -327,10 +326,10 @@ class Grafo:
         plt.ioff()
         
     
-    def visualize_solution(self, path, goals, algorithm, function, heuristic=False):
+    def visualize_solution(self, path, goals, algorithm, function, cost, heuristic=False):
         plt.clf()
         plt.ion()
-        plt.title(algorithm + ": " + path[0] + " -> " + str(goals))
+        plt.title(algorithm + ": " + path[0] + " -> " + str(goals) + "\nCusto: " + str(cost))
         pos = nx.get_node_attributes(self.nx, 'pos')
         edge_labels = {(node1, node2): f'{cost}' for (node1, node2, cost) in self.nx.edges.data('weight')}
 
