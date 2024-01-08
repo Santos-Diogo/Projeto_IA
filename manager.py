@@ -26,17 +26,17 @@ class Manager:
                     res.append(entrega)
         return res
     
-    def rotaBicicleta(kms, peso):
+    def rotaBicicleta(self, kms, peso):
         vel = 10 - (peso * 0.6)
-        return (kms * 60) / vel
+        return ((kms * 60) / vel) / 10
     
-    def rotaMota(kms, peso):
+    def rotaMota(self, kms, peso):
         vel = 35 - (peso * 0.5)
-        return (kms * 60) / vel
+        return ((kms * 60) / vel) / 10
     
-    def rotaCarro(kms, peso):
+    def rotaCarro(self, kms, peso):
         vel = 50 - (peso * 0.1)
-        return (kms * 60) / vel
+        return ((kms * 60) / vel) / 10
     
     def resolverBFS(self, estafetaID):
         estafeta = self.estafetas[estafetaID-1]
@@ -81,8 +81,6 @@ class Manager:
         return a, b, c, dest
     
     def resolver(self, estafetaID):
-        estafeta = self.estafetas[estafetaID-1]
-        destinos = self.destinosEntregas(estafeta.Lista_Encomendas)
         alg = ""
         minCusto = 800000
         pathBFS, custoBFS, expansaoBFS, destinosBFS = self.resolverBFS(estafetaID)
@@ -91,14 +89,57 @@ class Manager:
         pathCUn, custoCUn, expansaoCUn, destinosCUn = self.resolverCustoUniforme(estafetaID)
         pathGreedy, custoGreedy, expansaoGreedy, destinosGreedy = self.resolverGreedy(estafetaID)
         patha_star, custoa_star, expansaoa_star, destinosa_star = self.resolverA_Star(estafetaID)
+        if custoBFS < minCusto:
+            alg = "BFS"
+            minCusto = custoBFS
+        if custoDFS < minCusto:
+            alg = "DFS"
+            minCusto = custoDFS
+        if custoIDDFS < minCusto:
+            alg = "IDDFS"
+            minCusto = custoIDDFS
+        if custoCUn < minCusto:
+            alg = "Custo Uniforme"
+            minCusto = custoCUn
+        if custoGreedy < minCusto:
+            alg = "Greedy"
+            minCusto = custoGreedy
+        if custoa_star < minCusto:
+            alg = "A*"
+            minCusto = custoa_star
         
+        if alg == "BFS":
+            return alg, pathBFS, custoBFS, expansaoBFS, destinosBFS
+        elif alg == "DFS":
+            return alg, pathDFS, custoDFS, expansaoDFS, destinosDFS
+        elif alg == "IDDFS":
+            return alg, pathIDDFS, custoIDDFS, expansaoIDDFS, destinosIDDFS
+        elif alg == "Custo Uniforme":
+            return alg, pathCUn, custoCUn, expansaoCUn, destinosCUn
+        elif alg == "Greedy":
+            return alg, pathGreedy, custoGreedy, expansaoGreedy, destinosGreedy
+        elif alg == "A*":
+            return alg, patha_star, custoa_star, expansaoa_star, destinosa_star
+
+    
+    def entregasAtraso(self, entregasIDs, entregas, caminho, tempoFunc, pesos):
+        caminho_temp = []
+        atraso = []
+        destinos = self.destinosEntregas(entregasIDs)
+        for node in caminho:
+            if node in destinos:
+                for entrega in entregas:
+                    if entrega.destino == node:
+                        if tempoFunc(self.graph.custoCaminho(caminho_temp + [node]), pesos) > int(entrega.tempo):
+                            atraso.append(entrega)
+            caminho_temp.append(node)
         
-        
+        return atraso
         
     def pesos(self, entregas):
         sum = 0
         for entrega in entregas:
-            sum = sum + entrega.peso
+            sum = sum + int(entrega.peso)
         return sum
         
     def train(self):
@@ -110,26 +151,26 @@ class Manager:
             if id == estafeta.Id:
                 return str(estafeta) + ", Destinos: " + str(self.destinosEntregas(estafeta.Lista_Encomendas))
         
-    """ def concluiEstafeta (self, estafetaID):
+    def concluiEstafeta (self, estafetaID):
         estafeta = self.estafetas[estafetaID-1]
-        entregas = self.entregasEstafeta[estafeta.Lista_Encomendas]
+        entregas = self.entregasEstafeta(estafeta.Lista_Encomendas)
         sorted_objects = sorted(entregas, key=lambda obj: obj.tempo)
         custo_otimo = self.resolver(estafetaID)
         pesos = self.pesos(sorted_objects)
         if pesos <= 5:
-            tempo = self.rotaBicicleta(custo_otimo, pesos)
-            if tempo < sorted_objects[-1].tempo:
-                return something
+            tempo = self.rotaBicicleta(custo_otimo[2], pesos)
+            if tempo < int(sorted_objects[-1].tempo):
+                return [], custo_otimo, "Bicileta"
             else:
-                tempo = self.rotaMota(custo_otimo, pesos)
-                return somethingelse
+                return self.entregasAtraso(estafeta.Lista_Encomendas, sorted_objects, custo_otimo[1], self.rotaMota, pesos), custo_otimo, "Mota"
         elif pesos <= 20:
-            tempo = self.rotaMota(custo_otimo, pesos)
-            if tempo < sorted_objects[-1].tempo:
-                return something
+            #pdb.set_trace()
+            tempo = self.rotaMota(custo_otimo[2], pesos)
+            if tempo < int(sorted_objects[-1].tempo):
+                return [], custo_otimo, "Mota"
             else:
-                tempo = self.rotaCarro(custo_otimo, pesos)
-                return somethingelse
-        elif pesos <= 100: """
-            
+                return self.entregasAtraso(estafeta.Lista_Encomendas, sorted_objects, custo_otimo[1], self.rotaCarro, pesos), custo_otimo, "Carro"
+        elif pesos <= 100:
+            return self.entregasAtraso(estafeta.Lista_Encomendas, sorted_objects, custo_otimo[1], self.rotaCarro,pesos), custo_otimo, "Carro"
+        
         

@@ -270,6 +270,21 @@ class Grafo:
 
         return [], float('inf'), [], []
 
+    def custoCaminho(self, path):
+        cost = 0
+
+        for i in range(len(path) - 1):
+            current_node = path[i]
+            next_node = path[i + 1]
+
+            # Find the connection between the current and next nodes
+            connections = self.g[current_node]['connections']
+            for connection in connections:
+                if connection[0] == next_node:
+                    cost += connection[1]
+                    break  # Break the loop once the connection is found
+        return cost
+
 
     def trainHeuristic (self):
         keys = list(self.g.keys())

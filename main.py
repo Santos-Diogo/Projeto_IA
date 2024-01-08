@@ -1,5 +1,5 @@
 from manager import Manager
-
+import pdb
 class Menu:
     def __init__(self):
         self.manager = Manager()
@@ -14,6 +14,11 @@ class Menu:
                 return
         self.manager.graph.visualize_graph_with_heuristic(ch_list, self.heuristicF)
 
+    def entregasStr(self, entregas):
+        res = ""
+        for entrega in entregas:
+            res = res + str(entrega) + "; "
+        return res
 
     def __menuEstafeta (self, estafeta):
         print("Menu do " + self.manager.estafetaInfo(estafeta.Id))
@@ -51,6 +56,17 @@ class Menu:
             caminho, custo, expansao, destinos= self.manager.resolverA_Star(estafeta.Id)
             print (f"Caminho: {caminho}; Custo: {custo}; Expansão: {expansao}")
             self.manager.graph.visualize_solution(caminho, destinos, "A*", self.heuristicF, True)
+        elif choice == '7':
+            res = self.manager.concluiEstafeta(estafeta.Id)
+            if res[0] == []:
+                print[res[2]]
+                print("Tudo entregue a tempo")
+                self.manager.graph.visualize_solution(res[1][1], res[1][4], res[1][0], self.heuristicF, True)
+            else:
+                print(res[2])
+                print("Entregas em atraso" + self.entregasStr(res[0]))
+                self.manager.graph.visualize_solution(res[1][1], res[1][4], res[1][0], self.heuristicF, True)
+                print (f"Caminho: {res[1][1]}; Custo: {res[1][2]}; Expansão: {res[1][3]}")
         elif choice == '8':
             return
         else:
@@ -88,10 +104,10 @@ class Menu:
             elif choice == '4':
                 self.__escolherEstafeta()
             elif choice == '5':
-                print("Exiting program.")
+                print("A sair...")
                 break
             else:
-                print("Invalid choice. Please enter a number between 1 and 5.")
+                print("Escolha entre 1 a 5.")
 
 
 if __name__ == "__main__":
